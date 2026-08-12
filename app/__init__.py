@@ -6,6 +6,7 @@ from app.db import init_db
 
 from .projects import bp as projects_bp
 from .endpoints import bp as endpoints_bp
+from .contracts import bp as contracts_bp
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,6 +29,7 @@ def create_app(test_config=None):
 
     app.register_blueprint(projects_bp)
     app.register_blueprint(endpoints_bp)
+    app.register_blueprint(contracts_bp)
 
     @app.route("/")
     def home():
