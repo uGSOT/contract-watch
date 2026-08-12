@@ -5,7 +5,7 @@ from flask import Flask
 from app.db import init_db
 
 from .projects import bp as projects_bp
-
+from .endpoints import bp as endpoints_bp
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,6 +27,7 @@ def create_app(test_config=None):
     init_db(database_path=database_path, migration_path=migration_path)
 
     app.register_blueprint(projects_bp)
+    app.register_blueprint(endpoints_bp)
 
     @app.route("/")
     def home():
