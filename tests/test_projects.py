@@ -14,7 +14,7 @@ def test_projects_list_is_empty_by_default(tmp_path):
     )
 
     with app.test_client() as client:
-        response = client.get("/projects")
+        response = client.get("/api/projects")
 
     assert response.status_code == 200
     assert response.get_json()["projects"] == []
@@ -32,7 +32,7 @@ def test_create_project_success(tmp_path):
 
     with app.test_client() as client:
         response = client.post(
-            "/projects",
+            "/api/projects",
             json={
                 "name": "My User API",
                 "base_url": "http://localhost:5000",
@@ -59,7 +59,7 @@ def test_create_project_requires_name_and_base_url(tmp_path):
 
     with app.test_client() as client:
         response = client.post(
-            "/projects",
+            "/api/projects",
             json={
                 "name": "",
                 "base_url": "",
