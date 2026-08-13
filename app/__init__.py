@@ -4,7 +4,12 @@ from flask import Flask
 
 from app.db import init_db
 
+from .contracts import bp as contracts_bp
+from .endpoints import bp as endpoints_bp
 from .projects import bp as projects_bp
+from .runner import bp as runner_bp
+from .runs import bp as runs_bp
+from .views import bp as views_bp
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,9 +32,10 @@ def create_app(test_config=None):
     init_db(database_path=database_path, migration_path=migration_path)
 
     app.register_blueprint(projects_bp)
-
-    @app.route("/")
-    def home():
-        return "Contract Watch"
+    app.register_blueprint(endpoints_bp)
+    app.register_blueprint(contracts_bp)
+    app.register_blueprint(runner_bp)
+    app.register_blueprint(runs_bp)
+    app.register_blueprint(views_bp)
 
     return app

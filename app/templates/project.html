@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} · Contract Watch{% endblock %}
+
+{% block content %}
+<div id="project-page" data-project-id="{{ project.id }}">
+  <p class="breadcrumb"><a href="{{ url_for('views.dashboard') }}">Dashboard</a> / {{ project.name }}</p>
+
+  <section class="panel">
+    <h1>{{ project.name }}</h1>
+    <p class="muted">{{ project.base_url }}</p>
+    {% if project.description %}<p>{{ project.description }}</p>{% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Add an endpoint</h2>
+    <form id="create-endpoint-form" class="stack-form">
+      <div class="field-row">
+        <label>
+          Method
+          <select name="method" required>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </label>
+        <label>
+          Path
+          <input type="text" name="path" placeholder="/api/users/1" required>
+        </label>
+      </div>
+      <label>
+        Description
+        <input type="text" name="description" placeholder="Optional">
+      </label>
+      <button type="submit" class="btn btn-primary">Add endpoint</button>
+      <p class="form-error" id="create-endpoint-error" hidden></p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Endpoints</h2>
+    <div id="endpoints-list" class="stack-list">
+      <p class="muted">Loading endpoints…</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

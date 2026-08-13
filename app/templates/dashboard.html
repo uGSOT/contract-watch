@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Contract Watch{% endblock %}
+
+{% block content %}
+<div id="dashboard-page">
+  <section class="panel">
+    <h1>Projects</h1>
+    <p class="muted">Register the API you want to watch, then add endpoints and contracts under it.</p>
+
+    <form id="create-project-form" class="stack-form">
+      <div class="field-row">
+        <label>
+          Project name
+          <input type="text" name="name" placeholder="My User API" required>
+        </label>
+        <label>
+          Base URL
+          <input type="text" name="base_url" placeholder="http://localhost:5000" required>
+        </label>
+      </div>
+      <label>
+        Description
+        <input type="text" name="description" placeholder="Optional">
+      </label>
+      <button type="submit" class="btn btn-primary">Create project</button>
+      <p class="form-error" id="create-project-error" hidden></p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Your projects</h2>
+    <div id="projects-list" class="stack-list">
+      <p class="muted">Loading projects…</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

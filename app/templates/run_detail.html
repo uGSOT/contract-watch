@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Run #{{ run_id }} · Contract Watch{% endblock %}
+
+{% block content %}
+<div id="run-detail-page" data-run-id="{{ run_id }}">
+  <p class="breadcrumb"><a href="{{ url_for('views.history') }}">History</a> / Run #{{ run_id }}</p>
+
+  <section class="panel">
+    <div id="run-detail-content">
+      <p class="muted">Loading run…</p>
+    </div>
+  </section>
+</div>
+{% endblock %}

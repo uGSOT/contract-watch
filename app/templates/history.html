@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}History · Contract Watch{% endblock %}
+
+{% block content %}
+<div id="history-page">
+  <section class="panel">
+    <h1>Run history</h1>
+    <p class="muted">Every run across every project, newest first.</p>
+
+    <div class="field-row">
+      <label>
+        Filter
+        <select id="history-filter">
+          <option value="">All results</option>
+          <option value="pass">Pass</option>
+          <option value="drift">Drift</option>
+          <option value="error">Error</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div id="history-list" class="stack-list">
+      <p class="muted">Loading runs…</p>
+    </div>
+    <div class="pagination">
+      <button type="button" id="history-prev" class="btn btn-secondary">Previous</button>
+      <span id="history-page-label" class="muted"></span>
+      <button type="button" id="history-next" class="btn btn-secondary">Next</button>
+    </div>
+  </section>
+</div>
+{% endblock %}
