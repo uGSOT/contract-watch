@@ -1,16 +1,18 @@
 :root {
-  --bg: #f7f8fa;
+  --bg: #f5f5f5;
   --panel-bg: #ffffff;
-  --border: #e2e5ea;
-  --text: #1f2430;
-  --muted: #6b7280;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --pass: #16a34a;
-  --pass-bg: #ecfdf3;
-  --drift: #b45309;
-  --drift-bg: #fffbeb;
-  --error: #dc2626;
+  --border: #e5e5e5;
+  --text: #0a0a0a;
+  --muted: #737373;
+  --primary: #e31b23;
+  --primary-dark: #c4171e;
+  --primary-light: #fff1f2;
+  --highlight: #fef2f2;
+  --pass: #0a0a0a;
+  --pass-bg: #f5f5f5;
+  --drift: #e31b23;
+  --drift-bg: #fef2f2;
+  --error: #e31b23;
   --error-bg: #fef2f2;
   --radius: 8px;
 }
@@ -21,59 +23,107 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 14px 32px;
+  min-height: 64px;
   background: var(--panel-bg);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
   text-decoration: none;
   color: var(--text);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--primary);
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+
+.brand-icon svg {
+  width: 16px;
+  height: 16px;
+  color: #fff;
+}
+
+.topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .topbar nav a {
-  margin-left: 20px;
+  padding: 8px 14px;
   text-decoration: none;
   color: var(--muted);
   font-weight: 500;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
 }
 
 .topbar nav a:hover {
   color: var(--text);
+  background: var(--bg);
+}
+
+.topbar nav a.active {
+  color: var(--primary);
+  background: var(--highlight);
 }
 
 .page {
   max-width: 860px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 32px 24px;
 }
 
 .panel {
   background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 24px;
+  padding: 24px 28px;
   margin-bottom: 20px;
 }
 
 h1 {
   margin-top: 0;
-  font-size: 1.5rem;
+  margin-bottom: 8px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 h2 {
   font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .muted {
@@ -89,8 +139,16 @@ h2 {
   color: var(--muted);
 }
 
+.breadcrumb a:hover {
+  color: var(--primary);
+}
+
 a {
   color: var(--primary);
+}
+
+a:hover {
+  color: var(--primary-dark);
 }
 
 .stack-form {
@@ -124,11 +182,20 @@ input[type="text"],
 input[type="number"],
 select {
   font: inherit;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text);
-  background: #fff;
+  background: var(--panel-bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(227, 27, 35, 0.12);
 }
 
 .btn {
@@ -139,6 +206,7 @@ select {
   cursor: pointer;
   font-weight: 600;
   width: fit-content;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .btn-primary {
@@ -151,24 +219,28 @@ select {
 }
 
 .btn-primary:disabled {
-  background: #93a4c3;
+  background: #f5a5a9;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: #fff;
-  border-color: var(--border);
-  color: var(--text);
+  background: var(--panel-bg);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: var(--highlight);
 }
 
 .btn-danger {
-  background: #fff;
+  background: var(--panel-bg);
   border-color: var(--error);
   color: var(--error);
+}
+
+.btn-danger:hover {
+  background: var(--error-bg);
 }
 
 .form-error {
@@ -190,17 +262,29 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  background: var(--panel-bg);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.list-item:hover {
+  border-color: #fca5a5;
+  background: var(--highlight);
 }
 
 .list-item a {
   font-weight: 600;
   text-decoration: none;
+  color: var(--text);
+}
+
+.list-item a:hover {
+  color: var(--primary);
 }
 
 .method-badge {
   display: inline-block;
-  background: #eef2ff;
-  color: #4338ca;
+  background: var(--highlight);
+  color: var(--primary);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 8px;
@@ -210,8 +294,8 @@ select {
 }
 
 .json-preview {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #0a0a0a;
+  color: #f5f5f5;
   padding: 14px;
   border-radius: 6px;
   overflow-x: auto;
@@ -241,7 +325,7 @@ select {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 8px;
-  background: #fafbfc;
+  background: var(--bg);
 }
 
 .field-row-item input[type="text"] {
@@ -268,7 +352,7 @@ select {
 
 .result-panel.pass {
   background: var(--pass-bg);
-  border-color: var(--pass);
+  border-color: var(--border);
 }
 
 .result-panel.drift {
@@ -300,13 +384,18 @@ select {
   text-transform: uppercase;
 }
 
-.badge.pass { background: var(--pass-bg); color: var(--pass); }
+.badge.pass {
+  background: var(--pass-bg);
+  color: var(--pass);
+  border: 1px solid var(--border);
+}
+
 .badge.drift { background: var(--drift-bg); color: var(--drift); }
 .badge.error { background: var(--error-bg); color: var(--error); }
 
 .badge.acknowledged {
-  background: #eef2ff;
-  color: #4338ca;
+  background: var(--highlight);
+  color: var(--primary);
 }
 
 table {
@@ -321,9 +410,28 @@ th, td {
   border-bottom: 1px solid var(--border);
 }
 
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .pagination {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 14px;
+}
+
+.pagination a {
+  text-decoration: none;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 12px 16px;
+  }
 }

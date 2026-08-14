@@ -1,0 +1,15 @@
+<header class="topbar">
+  <a class="brand" href="{{ url_for('views.landing') }}">
+    <span class="brand-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </span>
+    Contract Watch
+  </a>
+  <nav>
+    <a href="{{ url_for('views.landing') }}" class="{% if request.endpoint == 'views.landing' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('views.dashboard') }}" class="{% if request.endpoint in ['views.dashboard', 'views.project_detail', 'views.endpoint_detail'] %}active{% endif %}">Dashboard</a>
+    <a href="{{ url_for('views.history') }}" class="{% if request.endpoint in ['views.history', 'views.run_detail'] %}active{% endif %}">History</a>
+  </nav>
+</header>
