@@ -1,18 +1,18 @@
 :root {
-  --bg: #f9fafb;
+  --bg: #f5f5f5;
   --panel-bg: #ffffff;
-  --border: #e5e7eb;
-  --text: #111827;
-  --muted: #6b7280;
-  --primary: #e11d48;
-  --primary-dark: #be123c;
+  --border: #e5e5e5;
+  --text: #0a0a0a;
+  --muted: #737373;
+  --primary: #e31b23;
+  --primary-dark: #c4171e;
   --primary-light: #fff1f2;
   --highlight: #fef2f2;
-  --pass: #16a34a;
-  --pass-bg: #ecfdf3;
-  --drift: #b45309;
-  --drift-bg: #fffbeb;
-  --error: #dc2626;
+  --pass: #0a0a0a;
+  --pass-bg: #f5f5f5;
+  --drift: #e31b23;
+  --drift-bg: #fef2f2;
+  --error: #e31b23;
   --error-bg: #fef2f2;
   --radius: 8px;
 }
@@ -34,9 +34,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 14px 32px;
+  min-height: 64px;
   background: var(--panel-bg);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .brand {
@@ -54,10 +58,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   background: var(--primary);
-  border-radius: 6px;
+  border-radius: 7px;
   flex-shrink: 0;
 }
 
@@ -74,12 +78,12 @@ body {
 }
 
 .topbar nav a {
-  padding: 6px 14px;
+  padding: 8px 14px;
   text-decoration: none;
   color: var(--muted);
   font-weight: 500;
-  font-size: 0.9rem;
-  border-radius: 6px;
+  font-size: 0.88rem;
+  border-radius: 8px;
   transition: color 0.15s, background 0.15s;
 }
 
@@ -191,7 +195,7 @@ input[type="number"]:focus,
 select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+  box-shadow: 0 0 0 3px rgba(227, 27, 35, 0.12);
 }
 
 .btn {
@@ -215,7 +219,7 @@ select:focus {
 }
 
 .btn-primary:disabled {
-  background: #fda4af;
+  background: #f5a5a9;
   cursor: not-allowed;
 }
 
@@ -263,7 +267,7 @@ select:focus {
 }
 
 .list-item:hover {
-  border-color: #fecdd3;
+  border-color: #fca5a5;
   background: var(--highlight);
 }
 
@@ -290,8 +294,8 @@ select:focus {
 }
 
 .json-preview {
-  background: #0f172a;
-  color: #e2e8f0;
+  background: #0a0a0a;
+  color: #f5f5f5;
   padding: 14px;
   border-radius: 6px;
   overflow-x: auto;
@@ -348,7 +352,7 @@ select:focus {
 
 .result-panel.pass {
   background: var(--pass-bg);
-  border-color: var(--pass);
+  border-color: var(--border);
 }
 
 .result-panel.drift {
@@ -380,7 +384,12 @@ select:focus {
   text-transform: uppercase;
 }
 
-.badge.pass { background: var(--pass-bg); color: var(--pass); }
+.badge.pass {
+  background: var(--pass-bg);
+  color: var(--pass);
+  border: 1px solid var(--border);
+}
+
 .badge.drift { background: var(--drift-bg); color: var(--drift); }
 .badge.error { background: var(--error-bg); color: var(--error); }
 
@@ -419,4 +428,10 @@ th {
 .pagination a {
   text-decoration: none;
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 12px 16px;
+  }
 }

@@ -30,10 +30,10 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 python seed.py                   # creates contract_watch.db with sample data
-python run.py                    # starts the dev server on http://127.0.0.1:5000
+python run.py                    # starts the dev server on http://127.0.0.1:5050
 ```
 
-Open `http://127.0.0.1:5000` in a browser. The seed script gives you one
+Open `http://127.0.0.1:5050` in a browser. The seed script gives you one
 project, one endpoint, and one contract to start from — or create your own
 from the dashboard.
 
