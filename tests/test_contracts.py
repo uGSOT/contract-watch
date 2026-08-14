@@ -8,8 +8,8 @@ def _make_app(tmp_path):
         {
             "TESTING": True,
             "DATABASE_PATH": str(tmp_path / "contract_watch_test.db"),
-            "MIGRATION_PATH": str(
-                Path(__file__).resolve().parents[1] / "migrations" / "001_initial.sql"
+            "MIGRATIONS_PATH": str(
+                Path(__file__).resolve().parents[1] / "migrations"
             ),
         }
     )
@@ -124,3 +124,49 @@ def test_active_contract_404_when_none(tmp_path):
         response = client.get(f"/api/endpoints/{endpoint_id}/contracts/active")
 
     assert response.status_code == 404
+
+
+def test_create_contract_defaults_to_strict(tmp_path):
+    app = _make_app(tmp_path)
+    with app.test_client() as client:
+        endpoint_id = _create_endpoint(client)
+
+        response = client.post(
+            f"/api/endpoints/{endpoint_id}/contracts",
+            json={"schema_json": SIMPLE_SCHEMA},
+        )
+
+    assert response.status_code == 201
+    assert response.get_json()["contract"]["strictness"] == "strict"
+
+
+def test_create_contract_lenient_strictness(tmp_path):
+    app = _make_app(tmp_path)
+    with app.test_client() as client:
+        endpoint_id = _create_endpoint(client)
+
+        response = client.post(
+            f"/api/endpoints/{endpoint_id}/contracts",
+            json={"schema_json": SIMPLE_SCHEMA, "strictness": "lenient"},
+        )
+
+        assert response.status_code == 201
+        contract = response.get_json()["contract"]
+        assert contract["strictness"] == "lenient"
+
+        reloaded = client.get(f"/api/contracts/{contract['id']}").get_json()["contract"]
+        assert reloaded["strictness"] == "lenient"
+
+
+def test_create_contract_invalid_strictness(tmp_path):
+    app = _make_app(tmp_path)
+    with app.test_client() as client:
+        endpoint_id = _create_endpoint(client)
+
+        response = client.post(
+            f"/api/endpoints/{endpoint_id}/contracts",
+            json={"schema_json": SIMPLE_SCHEMA, "strictness": "relaxed"},
+        )
+
+    assert response.status_code == 400
+    assert "strictness" in response.get_json()["error"]

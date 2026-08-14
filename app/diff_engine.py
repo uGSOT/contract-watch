@@ -30,7 +30,7 @@ def _normalize_name(name):
     return name.lower().replace("_", "").replace("-", "")
 
 
-def _diff_array(field_path, items_schema, actual_list, diffs):
+def _diff_array(field_path, items_schema, actual_list, diffs, strictness):
     item_type = items_schema.get("type")
     for index, element in enumerate(actual_list):
         element_path = f"{field_path}[{index}]"
@@ -38,6 +38,7 @@ def _diff_array(field_path, items_schema, actual_list, diffs):
             diffs.append(
                 {
                     "kind": "type_changed",
+                    "severity": "drift",
                     "field": element_path,
                     "expected": item_type,
                     "actual": _json_type(element),
@@ -47,10 +48,12 @@ def _diff_array(field_path, items_schema, actual_list, diffs):
             return
 
         if item_type == "object" and isinstance(items_schema.get("fields"), dict):
-            diffs.extend(_diff_fields(items_schema["fields"], element, element_path))
+            diffs.extend(
+                _diff_fields(items_schema["fields"], element, element_path, strictness)
+            )
 
 
-def _diff_fields(schema_fields, actual_obj, path):
+def _diff_fields(schema_fields, actual_obj, path, strictness):
     diffs = []
     expected_names = set(schema_fields.keys())
     actual_names = set(actual_obj.keys())
@@ -76,6 +79,7 @@ def _diff_fields(schema_fields, actual_obj, path):
             diffs.append(
                 {
                     "kind": "field_renamed",
+                    "severity": "drift",
                     "field": field_path,
                     "expected": missing_name,
                     "actual": unexpected_name,
@@ -89,6 +93,7 @@ def _diff_fields(schema_fields, actual_obj, path):
                 diffs.append(
                     {
                         "kind": "type_changed",
+                        "severity": "drift",
                         "field": field_path,
                         "expected": expected_type,
                         "actual": _json_type(actual_value),
@@ -105,6 +110,7 @@ def _diff_fields(schema_fields, actual_obj, path):
         diffs.append(
             {
                 "kind": "missing_field",
+                "severity": "drift",
                 "field": field_path,
                 "expected": schema_fields[missing_name].get("type"),
                 "actual": None,
@@ -112,11 +118,13 @@ def _diff_fields(schema_fields, actual_obj, path):
             }
         )
 
+    unexpected_severity = "notice" if strictness == "lenient" else "drift"
     for unexpected_name in sorted(unexpected - matched_unexpected):
         field_path = f"{path}.{unexpected_name}" if path else unexpected_name
         diffs.append(
             {
                 "kind": "unexpected_field",
+                "severity": unexpected_severity,
                 "field": field_path,
                 "expected": None,
                 "actual": _json_type(actual_obj[unexpected_name]),
@@ -134,6 +142,7 @@ def _diff_fields(schema_fields, actual_obj, path):
             diffs.append(
                 {
                     "kind": "type_changed",
+                    "severity": "drift",
                     "field": field_path,
                     "expected": expected_type,
                     "actual": _json_type(actual_value),
@@ -143,18 +152,24 @@ def _diff_fields(schema_fields, actual_obj, path):
             continue
 
         if expected_type == "object" and isinstance(field_schema.get("fields"), dict):
-            diffs.extend(_diff_fields(field_schema["fields"], actual_value, field_path))
+            diffs.extend(
+                _diff_fields(field_schema["fields"], actual_value, field_path, strictness)
+            )
 
         if expected_type == "array" and isinstance(field_schema.get("items"), dict):
-            _diff_array(field_path, field_schema["items"], actual_value, diffs)
+            _diff_array(field_path, field_schema["items"], actual_value, diffs, strictness)
 
     return diffs
 
 
-def diff_response(schema, expected_status, actual_status, response_json):
+def diff_response(schema, expected_status, actual_status, response_json, strictness="strict"):
     """Compare a parsed JSON response against a contract schema.
 
     Returns a (result, diffs) tuple where result is "pass" or "drift".
+    Every diff carries a "severity": "drift" diffs fail the run, "notice"
+    diffs don't. With the default "strict" strictness every diff is a
+    drift; with "lenient", unexpected fields are recorded as notices
+    instead, so a run whose only diffs are extra fields still passes.
     """
     diffs = []
 
@@ -162,6 +177,7 @@ def diff_response(schema, expected_status, actual_status, response_json):
         diffs.append(
             {
                 "kind": "status_mismatch",
+                "severity": "drift",
                 "field": "status",
                 "expected": expected_status,
                 "actual": actual_status,
@@ -172,11 +188,12 @@ def diff_response(schema, expected_status, actual_status, response_json):
     schema_fields = (schema or {}).get("fields", {})
 
     if isinstance(response_json, dict):
-        diffs.extend(_diff_fields(schema_fields, response_json, ""))
+        diffs.extend(_diff_fields(schema_fields, response_json, "", strictness))
     else:
         diffs.append(
             {
                 "kind": "type_changed",
+                "severity": "drift",
                 "field": "$",
                 "expected": "object",
                 "actual": _json_type(response_json),
@@ -184,5 +201,5 @@ def diff_response(schema, expected_status, actual_status, response_json):
             }
         )
 
-    result = "pass" if not diffs else "drift"
+    result = "drift" if any(diff["severity"] == "drift" for diff in diffs) else "pass"
     return result, diffs

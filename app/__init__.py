@@ -20,16 +20,16 @@ def create_app(test_config=None):
 
     app.config.from_mapping(
         DATABASE_PATH=str(BASE_DIR / "contract_watch.db"),
-        MIGRATION_PATH=str(BASE_DIR / "migrations" / "001_initial.sql"),
+        MIGRATIONS_PATH=str(BASE_DIR / "migrations"),
     )
 
     if test_config:
         app.config.update(test_config)
 
     database_path = app.config["DATABASE_PATH"]
-    migration_path = app.config["MIGRATION_PATH"]
+    migrations_path = app.config["MIGRATIONS_PATH"]
 
-    init_db(database_path=database_path, migration_path=migration_path)
+    init_db(database_path=database_path, migrations_path=migrations_path)
 
     app.register_blueprint(projects_bp)
     app.register_blueprint(endpoints_bp)

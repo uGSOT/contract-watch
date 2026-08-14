@@ -54,6 +54,7 @@
         (diff) => `
         <tr>
           <td>${escapeHtml(diff.kind)}</td>
+          <td><span class="badge ${diff.severity === "notice" ? "notice" : "drift"}">${escapeHtml(diff.severity || "drift")}</span></td>
           <td>${escapeHtml(diff.field)}</td>
           <td>${escapeHtml(diff.expected)}</td>
           <td>${escapeHtml(diff.actual)}</td>
@@ -65,23 +66,37 @@
     return `
       <table>
         <thead>
-          <tr><th>Kind</th><th>Field</th><th>Expected</th><th>Actual</th><th>Message</th></tr>
+          <tr><th>Kind</th><th>Severity</th><th>Field</th><th>Expected</th><th>Actual</th><th>Message</th></tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>`;
   }
 
-  function resultTitle(result) {
-    if (result === "pass") return "PASS";
-    if (result === "drift") return "DRIFT DETECTED";
+  // A passing run can still carry notice-level diffs (lenient contracts
+  // record extra fields as notices). Show those runs as "notice" so they
+  // stand apart from a clean pass, without treating them as failures.
+  function displayState(run) {
+    if (run.result !== "pass") return run.result;
+    const noticeCount =
+      run.notice_count !== undefined
+        ? run.notice_count
+        : (run.diffs || []).filter((diff) => diff.severity === "notice").length;
+    return noticeCount > 0 ? "notice" : "pass";
+  }
+
+  function resultTitle(state) {
+    if (state === "pass") return "PASS";
+    if (state === "notice") return "PASS (WITH NOTICES)";
+    if (state === "drift") return "DRIFT DETECTED";
     return "ERROR";
   }
 
   function renderRunPanel(run) {
+    const state = displayState(run);
     const container = document.createElement("div");
-    container.className = `result-panel ${run.result}`;
+    container.className = `result-panel ${state}`;
 
-    let body = `<div class="result-title">${resultTitle(run.result)}</div>`;
+    let body = `<div class="result-title">${resultTitle(state)}</div>`;
     body += `<p class="muted">Run #${run.id} · ${formatDate(run.created_at)} · status ${run.status_code ?? "—"} · ${run.duration_ms ?? "—"} ms</p>`;
 
     if (run.result === "error") {
@@ -321,6 +336,7 @@
     const addFieldBtn = document.getElementById("add-field-btn");
     const preview = document.getElementById("schema-preview");
     const expectedStatusInput = document.getElementById("expected-status");
+    const strictnessSelect = document.getElementById("contract-strictness");
     const saveBtn = document.getElementById("save-contract-btn");
     const saveError = document.getElementById("save-contract-error");
     const contractsList = document.getElementById("contracts-list");
@@ -356,6 +372,7 @@
       const payload = {
         schema_json: schema,
         expected_status: parseInt(expectedStatusInput.value, 10) || 200,
+        strictness: strictnessSelect.value,
       };
 
       const { ok, data } = await api("POST", `/api/endpoints/${endpointId}/contracts`, payload);
@@ -388,7 +405,7 @@
             <div>
               <strong>v${contract.version}</strong>
               ${contract.is_active ? '<span class="badge pass">active</span>' : ""}
-              <div class="muted">expected status ${contract.expected_status} · ${formatDate(contract.created_at)}</div>
+              <div class="muted">expected status ${contract.expected_status} · ${escapeHtml(contract.strictness)} · ${formatDate(contract.created_at)}</div>
             </div>
           </div>`
         )
@@ -417,7 +434,7 @@
           (run) => `
           <div class="list-item">
             <a href="/runs/${run.id}">Run #${run.id} · ${formatDate(run.created_at)}</a>
-            <span class="badge ${run.result}">${run.result}</span>
+            <span class="badge ${displayState(run)}">${displayState(run)}</span>
           </div>`
         )
         .join("");
@@ -483,7 +500,7 @@
                 <tr>
                   <td>${escapeHtml(run.project_name)}</td>
                   <td><span class="method-badge">${escapeHtml(run.endpoint_method)}</span>${escapeHtml(run.endpoint_path)}</td>
-                  <td><span class="badge ${run.result}">${run.result}</span> ${run.acknowledged ? '<span class="badge acknowledged">ack</span>' : ""}</td>
+                  <td><span class="badge ${displayState(run)}">${displayState(run)}</span> ${run.acknowledged ? '<span class="badge acknowledged">ack</span>' : ""}</td>
                   <td>${formatDate(run.created_at)}</td>
                   <td><a href="/runs/${run.id}">View</a></td>
                 </tr>`

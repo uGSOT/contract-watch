@@ -91,12 +91,13 @@ def save_run(db, contract_id, result, status_code, response_body, duration_ms, e
     for diff in diffs:
         db.execute(
             """
-            INSERT INTO run_diffs (run_id, kind, field, expected, actual, message)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO run_diffs (run_id, kind, severity, field, expected, actual, message)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 run_id,
                 diff["kind"],
+                diff.get("severity", "drift"),
                 diff["field"],
                 _to_text(diff.get("expected")),
                 _to_text(diff.get("actual")),
@@ -184,7 +185,8 @@ def run_contract(contract_id):
             return jsonify({"run": load_run_with_diffs(db, run_id)}), 201
 
         result, diffs = diff_response(
-            schema, expected_status, response.status_code, response_json
+            schema, expected_status, response.status_code, response_json,
+            contract["strictness"],
         )
 
         run_id = save_run(

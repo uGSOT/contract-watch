@@ -83,8 +83,14 @@ List every version for an endpoint, newest first.
 The current active contract, or `404` if none exists yet.
 
 ### `POST /api/endpoints/<endpoint_id>/contracts`
-Body: `{ "schema_json": {...}, "expected_status": 200 }`. Creates the next
-version, marks it active, deactivates the previous active version (if any).
+Body: `{ "schema_json": {...}, "expected_status": 200, "strictness": "strict" }`.
+Creates the next version, marks it active, deactivates the previous active
+version (if any).
+
+`strictness` is optional and must be `strict` (the default) or `lenient`.
+It controls how Run treats fields in the response that the contract
+doesn't declare: `strict` counts them as drift, `lenient` records them as
+non-failing notices (see Runner below).
 
 ### `GET /api/contracts/<contract_id>`
 Fetch a single contract version by its own id.
@@ -104,7 +110,7 @@ the response to the contract's schema, saves a `run` row (and any
     "duration_ms": 12, "error_message": null, "acknowledged": 0,
     "created_at": "...",
     "diffs": [
-      { "kind": "field_renamed", "field": "userId", "expected": "user_id", "actual": "userId", "message": "..." }
+      { "kind": "field_renamed", "severity": "drift", "field": "userId", "expected": "user_id", "actual": "userId", "message": "..." }
     ]
   }
 }
@@ -115,6 +121,13 @@ URL, DNS failure, connection refused, timeout (10s), or a non-JSON
 response body — in all of those cases `diffs` is empty and
 `error_message` explains what happened.
 
+Each diff has a `severity`: `drift` diffs fail the run, `notice` diffs
+don't. On a `strict` contract every diff is a `drift`. On a `lenient`
+contract, `unexpected_field` diffs are recorded as `notice` instead — they
+still show up in the run's `diffs`, but a run whose only diffs are notices
+has `"result": "pass"`. Everything else (missing fields, type changes,
+renames, status mismatches) is a `drift` in both modes.
+
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the SSRF policy this route
 enforces before making the request.
 
@@ -122,7 +135,10 @@ enforces before making the request.
 
 ### `GET /api/contracts/<contract_id>/runs`
 Runs for one contract. Query params: `result` (`pass`/`drift`/`error`),
-`page` (default 1), `per_page` (default 20, max 100).
+`page` (default 1), `per_page` (default 20, max 100). Each row includes a
+`notice_count` — the number of notice-severity diffs on that run — so
+list pages can show a passing run with notices differently from a clean
+pass without fetching every run's diffs.
 
 ### `GET /api/runs`
 Same as above but across every contract/project. Each row also includes

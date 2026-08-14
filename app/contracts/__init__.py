@@ -8,6 +8,7 @@ from app.db import get_db
 bp = Blueprint("contracts", __name__, url_prefix="/api")
 
 VALID_TYPES = {"integer", "number", "string", "boolean", "array", "object"}
+VALID_STRICTNESS = {"strict", "lenient"}
 
 
 def _get_endpoint(db, endpoint_id):
@@ -115,6 +116,7 @@ def create_contract(endpoint_id):
     schema_json = payload.get("schema_json")
     expected_status = payload.get("expected_status", 200)
     schema_version = payload.get("schema_version", 1)
+    strictness = payload.get("strictness", "strict")
 
     schema_error = _validate_schema(schema_json)
     if schema_error:
@@ -125,6 +127,9 @@ def create_contract(endpoint_id):
 
     if not isinstance(schema_version, int) or schema_version < 1:
         return jsonify({"error": "schema_version must be a positive integer"}), 400
+
+    if strictness not in VALID_STRICTNESS:
+        return jsonify({"error": f"strictness must be one of {sorted(VALID_STRICTNESS)}"}), 400
 
     db = get_db(current_app.config["DATABASE_PATH"])
     try:
@@ -146,15 +151,16 @@ def create_contract(endpoint_id):
             """
             INSERT INTO contracts (
                 endpoint_id, schema_json, schema_version,
-                expected_status, version, is_active
+                expected_status, strictness, version, is_active
             )
-            VALUES (?, ?, ?, ?, ?, 1)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 endpoint_id,
                 json.dumps(schema_json),
                 schema_version,
                 expected_status,
+                strictness,
                 next_version,
             ),
         )

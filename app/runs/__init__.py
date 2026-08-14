@@ -49,7 +49,12 @@ def list_runs(contract_id):
         offset = (page - 1) * per_page
         rows = db.execute(
             f"""
-            SELECT * FROM runs
+            SELECT
+                runs.*,
+                (SELECT COUNT(*) FROM run_diffs
+                 WHERE run_diffs.run_id = runs.id
+                   AND run_diffs.severity = 'notice') AS notice_count
+            FROM runs
             {where_clause}
             ORDER BY created_at DESC, id DESC
             LIMIT ? OFFSET ?
@@ -103,6 +108,9 @@ def list_all_runs():
             f"""
             SELECT
                 runs.*,
+                (SELECT COUNT(*) FROM run_diffs
+                 WHERE run_diffs.run_id = runs.id
+                   AND run_diffs.severity = 'notice') AS notice_count,
                 contracts.version AS contract_version,
                 endpoints.id AS endpoint_id,
                 endpoints.method AS endpoint_method,
