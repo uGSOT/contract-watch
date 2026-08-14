@@ -31,6 +31,13 @@
         Expected status
         <input type="number" id="expected-status" value="200">
       </label>
+      <label>
+        Strictness
+        <select id="contract-strictness">
+          <option value="strict" selected>strict — extra fields are drift</option>
+          <option value="lenient">lenient — extra fields are a notice</option>
+        </select>
+      </label>
     </div>
 
     <div id="schema-fields-root" class="field-rows-root"></div>

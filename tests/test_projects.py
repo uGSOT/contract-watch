@@ -9,7 +9,7 @@ def test_projects_list_is_empty_by_default(tmp_path):
         {
             "TESTING": True,
             "DATABASE_PATH": str(db_path),
-            "MIGRATION_PATH": str(Path(__file__).resolve().parents[1] / "migrations" / "001_initial.sql"),
+            "MIGRATIONS_PATH": str(Path(__file__).resolve().parents[1] / "migrations"),
         }
     )
 
@@ -26,7 +26,7 @@ def test_create_project_success(tmp_path):
         {
             "TESTING": True,
             "DATABASE_PATH": str(db_path),
-            "MIGRATION_PATH": str(Path(__file__).resolve().parents[1] / "migrations" / "001_initial.sql"),
+            "MIGRATIONS_PATH": str(Path(__file__).resolve().parents[1] / "migrations"),
         }
     )
 
@@ -53,7 +53,7 @@ def test_create_project_requires_name_and_base_url(tmp_path):
         {
             "TESTING": True,
             "DATABASE_PATH": str(db_path),
-            "MIGRATION_PATH": str(Path(__file__).resolve().parents[1] / "migrations" / "001_initial.sql"),
+            "MIGRATIONS_PATH": str(Path(__file__).resolve().parents[1] / "migrations"),
         }
     )
 

@@ -10,6 +10,8 @@
   --highlight: #fef2f2;
   --pass: #0a0a0a;
   --pass-bg: #f5f5f5;
+  --notice: #b45309;
+  --notice-bg: #fffbeb;
   --drift: #e31b23;
   --drift-bg: #fef2f2;
   --error: #e31b23;
@@ -355,6 +357,11 @@ select:focus {
   border-color: var(--border);
 }
 
+.result-panel.notice {
+  background: var(--notice-bg);
+  border-color: var(--notice);
+}
+
 .result-panel.drift {
   background: var(--drift-bg);
   border-color: var(--drift);
@@ -372,6 +379,7 @@ select:focus {
 }
 
 .result-panel.pass .result-title { color: var(--pass); }
+.result-panel.notice .result-title { color: var(--notice); }
 .result-panel.drift .result-title { color: var(--drift); }
 .result-panel.error .result-title { color: var(--error); }
 
@@ -390,6 +398,7 @@ select:focus {
   border: 1px solid var(--border);
 }
 
+.badge.notice { background: var(--notice-bg); color: var(--notice); }
 .badge.drift { background: var(--drift-bg); color: var(--drift); }
 .badge.error { background: var(--error-bg); color: var(--error); }
 

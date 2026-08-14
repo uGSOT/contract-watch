@@ -8,8 +8,8 @@ def _make_app(tmp_path):
         {
             "TESTING": True,
             "DATABASE_PATH": str(tmp_path / "contract_watch_test.db"),
-            "MIGRATION_PATH": str(
-                Path(__file__).resolve().parents[1] / "migrations" / "001_initial.sql"
+            "MIGRATIONS_PATH": str(
+                Path(__file__).resolve().parents[1] / "migrations"
             ),
         }
     )

@@ -16,7 +16,9 @@ app/
   views/             HTML page routes: /, /projects/<id>, /endpoints/<id>, /history, /runs/<id>
   templates/         Jinja2 templates rendered by views/
   static/css, static/js   plain CSS + vanilla JS, no build step
-migrations/001_initial.sql   full schema (all 5 tables, FKs, indexes)
+migrations/*.sql     applied in filename order by db.py's init_db, which
+                     records each applied file in schema_migrations so a
+                     migration runs exactly once per database
 tests/               one test file per backend module
 ```
 
@@ -48,7 +50,7 @@ Pure, dependency-free functions — no Flask, no database — so they're easy
 to unit test in isolation (`tests/test_diff_engine.py`). The entry point:
 
 ```python
-diff_response(schema, expected_status, actual_status, response_json) -> (result, diffs)
+diff_response(schema, expected_status, actual_status, response_json, strictness="strict") -> (result, diffs)
 ```
 
 Walks the schema's `fields` map against the actual response object,
@@ -56,7 +58,10 @@ recursively for nested `object` fields and `array` items:
 
 - **status_mismatch** — actual HTTP status != expected
 - **missing_field** — a `required` field isn't in the response
-- **unexpected_field** — a response field isn't declared in the schema
+- **unexpected_field** — a response field isn't declared in the schema.
+  This is the one kind whose severity depends on the contract's
+  `strictness`: `"drift"` on a strict contract, `"notice"` on a lenient
+  one
 - **type_changed** — a field is present in both but its JSON type differs
   (a `number` field accepts an `integer` value, since JSON doesn't
   distinguish them; everything else must match exactly)
@@ -68,7 +73,9 @@ recursively for nested `object` fields and `array` items:
   why a rename + a type change on the same field show up as two diffs (see
   the `user_id: int` -> `userId: str` example in the README).
 
-`result` is `"pass"` iff the diff list is empty, otherwise `"drift"`.
+Every diff carries a `severity` — `"drift"` or `"notice"`. `result` is
+`"pass"` iff no diff has severity `"drift"`, otherwise `"drift"` — so on a
+lenient contract, extra fields are recorded but don't fail the run.
 `"error"` is never returned by the diff engine — it's set one layer up, by
 the runner, for failures that happen *before* there's a response to diff
 (timeout, connection refused, non-JSON body).
@@ -102,7 +109,7 @@ the runner, for failures that happen *before* there's a response to diff
 6. Otherwise: call `diff_engine.diff_response(...)`, save the run with the
    result it returns, and bulk-insert every diff into `run_diffs`.
 7. Respond with the full run (including its diffs) as JSON — this is what
-   the frontend renders directly into the PASS/DRIFT/ERROR panel.
+   the frontend renders directly into the PASS/NOTICE/DRIFT/ERROR panel.
 
 ## Frontend
 

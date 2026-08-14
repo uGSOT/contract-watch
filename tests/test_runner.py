@@ -10,8 +10,8 @@ def _make_app(tmp_path):
         {
             "TESTING": True,
             "DATABASE_PATH": str(tmp_path / "contract_watch_test.db"),
-            "MIGRATION_PATH": str(
-                Path(__file__).resolve().parents[1] / "migrations" / "001_initial.sql"
+            "MIGRATIONS_PATH": str(
+                Path(__file__).resolve().parents[1] / "migrations"
             ),
         }
     )
@@ -26,7 +26,7 @@ SCHEMA = {
 }
 
 
-def _create_active_contract(client, base_url="http://localhost:5000"):
+def _create_active_contract(client, base_url="http://localhost:5000", strictness=None):
     project_id = client.post(
         "/api/projects", json={"name": "My User API", "base_url": base_url}
     ).get_json()["project"]["id"]
@@ -36,9 +36,13 @@ def _create_active_contract(client, base_url="http://localhost:5000"):
         json={"method": "GET", "path": "/api/users/1"},
     ).get_json()["endpoint"]["id"]
 
+    contract_payload = {"schema_json": SCHEMA, "expected_status": 200}
+    if strictness is not None:
+        contract_payload["strictness"] = strictness
+
     contract = client.post(
         f"/api/endpoints/{endpoint_id}/contracts",
-        json={"schema_json": SCHEMA, "expected_status": 200},
+        json=contract_payload,
     ).get_json()["contract"]
 
     target_url = f"{base_url}/api/users/1"
@@ -80,6 +84,73 @@ def test_run_drift_detects_rename(tmp_path, requests_mock):
     kinds = {diff["kind"] for diff in run["diffs"]}
     assert "field_renamed" in kinds
     assert "type_changed" in kinds
+
+
+def test_run_strict_extra_field_is_drift(tmp_path, requests_mock):
+    app = _make_app(tmp_path)
+    with app.test_client() as client:
+        contract_id, target_url = _create_active_contract(client)
+        requests_mock.get(
+            target_url,
+            json={
+                "user_id": 1,
+                "name": "Souvik",
+                "email": "souvik@example.com",
+                "extra": "surprise",
+            },
+            status_code=200,
+        )
+
+        response = client.post(f"/api/contracts/{contract_id}/run")
+
+    run = response.get_json()["run"]
+    assert run["result"] == "drift"
+    assert len(run["diffs"]) == 1
+    assert run["diffs"][0]["kind"] == "unexpected_field"
+    assert run["diffs"][0]["severity"] == "drift"
+
+
+def test_run_lenient_extra_field_is_notice_and_passes(tmp_path, requests_mock):
+    app = _make_app(tmp_path)
+    with app.test_client() as client:
+        contract_id, target_url = _create_active_contract(client, strictness="lenient")
+        requests_mock.get(
+            target_url,
+            json={
+                "user_id": 1,
+                "name": "Souvik",
+                "email": "souvik@example.com",
+                "extra": "surprise",
+            },
+            status_code=200,
+        )
+
+        response = client.post(f"/api/contracts/{contract_id}/run")
+
+    run = response.get_json()["run"]
+    assert run["result"] == "pass"
+    assert len(run["diffs"]) == 1
+    assert run["diffs"][0]["kind"] == "unexpected_field"
+    assert run["diffs"][0]["severity"] == "notice"
+    assert run["diffs"][0]["field"] == "extra"
+
+
+def test_run_lenient_missing_field_still_drifts(tmp_path, requests_mock):
+    app = _make_app(tmp_path)
+    with app.test_client() as client:
+        contract_id, target_url = _create_active_contract(client, strictness="lenient")
+        requests_mock.get(
+            target_url,
+            json={"user_id": 1, "name": "Souvik"},
+            status_code=200,
+        )
+
+        response = client.post(f"/api/contracts/{contract_id}/run")
+
+    run = response.get_json()["run"]
+    assert run["result"] == "drift"
+    assert run["diffs"][0]["kind"] == "missing_field"
+    assert run["diffs"][0]["severity"] == "drift"
 
 
 def test_run_timeout_is_error(tmp_path, requests_mock):
